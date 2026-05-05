@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunter-2 Security Report</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+               background: #f5f5f5; color: #1f2937; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #111827; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; }
+        h2 { color: #374151; margin-top: 30px; border-left: 4px solid #3b82f6; padding-left: 12px; }
+        .meta { background: #e5e7eb; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-card .count { font-size: 2em; font-weight: bold; }
+        .stat-card.critical .count { color: #dc2626; }
+        .stat-card.high .count { color: #ea580c; }
+        .stat-card.medium .count { color: #ca8a04; }
+        .stat-card.low .count { color: #16a34a; }
+        .stat-card.info .count { color: #2563eb; }
+        .finding { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .finding-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .severity-badge { padding: 4px 12px; border-radius: 4px; color: white; font-weight: bold; font-size: 0.9em; }
+        .severity-critical { background: #dc2626; }
+        .severity-high { background: #ea580c; }
+        .severity-medium { background: #ca8a04; }
+        .severity-low { background: #16a34a; }
+        .severity-info { background: #2563eb; }
+        .url { font-family: monospace; background: #f3f4f6; padding: 8px 12px; border-radius: 4px; word-break: break-all; }
+        .confidence { margin-top: 10px; font-size: 0.9em; }
+        .confidence span { padding: 2px 8px; border-radius: 3px; }
+        .confidence-high { background: #dcfce7; color: #166534; }
+        .confidence-medium { background: #fef9c3; color: #854d0e; }
+        .confidence-low { background: #fee2e2; color: #991b1b; }
+        .evidence { background: #f8fafc; padding: 12px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 0.9em; overflow-x: auto; }
+        .chain { background: #f0f9ff; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #0ea5e9; }
+        .chain-title { font-weight: bold; color: #0369a1; margin-bottom: 8px; }
+        .chain-step { padding: 5px 0; }
+        .remediation { background: #fef2f2; padding: 12px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #ef4444; }
+        .remediation-title { font-weight: bold; color: #b91c1c; }
+        .flags { background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #22c55e; }
+        .flag { font-family: monospace; font-size: 1.2em; color: #15803d; font-weight: bold; }
+        .clues { background: #fff7ed; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .clue { padding: 5px 0; border-bottom: 1px dashed #fdba74; }
+        .artifacts { margin-top: 20px; }
+        .artifact-item { background: #f8fafc; padding: 10px; margin: 8px 0; border-radius: 4px; }
+        .artifact-type { font-weight: bold; color: #475569; }
+        .artifact-path { font-family: monospace; font-size: 0.9em; color: #64748b; }
+        .category-section { margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hunter-2 Security Report</h1>
+        
+        <div class="meta">
+            <p><strong>Target:</strong> <span class="url">http://saturn.picoctf.net:60627</span></p>
+            <p><strong>Scan Time:</strong> 2026-04-16T06:00:47.756511 UTC</p>
+            <p><strong>Output Directory:</strong> loot</p>
+            <p><strong>Total Findings:</strong> 1</p>
+        </div>
+        <h2>Summary</h2>
+        <div class="summary">
+            <div class="stat-card critical">
+                <div class="count">0</div>
+                <div>Critical</div>
+            </div>
+            <div class="stat-card high">
+                <div class="count">1</div>
+                <div>High</div>
+            </div>
+            <div class="stat-card medium">
+                <div class="count">0</div>
+                <div>Medium</div>
+            </div>
+            <div class="stat-card low">
+                <div class="count">0</div>
+                <div>Low</div>
+            </div>
+            <div class="stat-card info">
+                <div class="count">0</div>
+                <div>Info</div>
+            </div>
+        </div>
+        <h2>Verification Status</h2>
+        <div class="summary">
+            <div class="stat-card" style="border-left: 4px solid #6b7280">
+                <div class="count">0</div>
+                <div>Observed</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #f59e0b">
+                <div class="count">1</div>
+                <div>Suspected</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #10b981">
+                <div class="count">0</div>
+                <div>Verified</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #dc2626">
+                <div class="count">0</div>
+                <div>Exploited</div>
+            </div>
+        </div>
+        <h2>Technical Findings</h2>
+        <div class="category-section">
+            <h2>敏感資訊外洩</h2>
+        <div class="finding">
+            <div class="finding-header">
+                <div>
+                    <strong>1. passive-secrets</strong>
+                </div>
+                <div>
+                    <span class="severity-badge severity-high">高</span>
+                    <span class="severity-badge" style="background: #6b7280; margin-left: 8px;">可疑</span>
+                </div>
+            </div>
+            <div class="url">http://saturn.picoctf.net:60627/</div>
+            <div class="confidence">Confidence: <span class="confidence-medium">MEDIUM</span></div>
+            <div class="evidence"><strong>Evidence:</strong><br>
+                picoctf_flag:picoCTF{1n5p3t0r_0f_h7ml_fd5d57bd}<br>
+            </div>
+            <div class="clues"><strong>Clues:</strong>
+                <div class="clue">hidden_html_comment: &lt;!--picoCTF{1n5p3t0r_0f_h7ml_fd5d57bd}--&gt;</div>
+                <div class="clue">hidden_html_comment: &lt;!--picoCTF{1n5p3t0r_0f_h7ml_fd5d57bd}--&gt;</div>
+            </div>
+            <div class="remediation">
+                <div class="remediation-title">Remediation</div>
+                Remove secrets from client-facing responses; rotate exposed keys/tokens.
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "suppressions": [
+    {
+      "id": "sup-0001",
+      "rule_id": "passive-artifact-analysis",
+      "url_pattern": ".*\\.jpg$",
+      "reason": "Expected image files",
+      "owner": "security-team",
+      "created_at": "2026-04-11T10:00:00Z",
+      "expires_at": null,
+      "severity_filter": null
+    }
+  ]
+}

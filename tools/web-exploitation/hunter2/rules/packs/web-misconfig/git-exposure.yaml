@@ -1,0 +1,38 @@
+id: git-directory-exposure
+
+info:
+  name: Exposed .git Metadata
+  severity: High
+  confidence: High
+  category: Source Control Exposure
+  remediation: Block access to /.git via web server config; ensure deployment artifacts exclude VCS metadata.
+  description: The .git directory is accessible over HTTP, potentially exposing source code, commit history, and configuration.
+  references:
+    - "https://owasp.org/www-project-web-security-testing-guide/"
+    - "https://cwe.mitre.org/data/definitions/552.html"
+  cwe: "552"
+  owasp: "A01:2021-Broken Access Control"
+  tags: [git, source, misconfig]
+  preconditions: []
+  evidence_type: http-response
+  exploitability: medium
+
+request:
+  method: GET
+  paths:
+    - /.git/config
+    - /.git/HEAD
+    - /.git/index
+
+match:
+  status: 200
+  body_regex:
+    - '(?m)^\[core\]$'
+    - '(?m)^ref:\s+refs/heads/'
+    - '(?s)\x00\x00\x00\x02'
+
+safe_check: null
+verify_check: null
+
+save_artifact: true
+artifact_name: git_exposure

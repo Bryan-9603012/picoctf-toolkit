@@ -1,0 +1,43 @@
+id: spring-actuator-exposure
+
+info:
+  name: Spring Boot Actuator Exposure
+  severity: High
+  confidence: high
+  category: Debug Endpoint Exposure (Spring Actuator)
+  description: Spring Boot Actuator endpoints are exposed without authentication, potentially revealing configuration, environment variables, heap dumps, and other sensitive information.
+  remediation: Disable or secure actuator endpoints; require auth; restrict exposure; disable sensitive endpoints like env/heapdump in prod.
+  references:
+    - "https://docs.spring.io/spring-boot actuator/docs/current/reference/html/actuator.html"
+    - "https://owasp.org/www-project-web-security-testing-guide/"
+    - "https://cwe.mitre.org/data/definitions/552.html"
+  cwe: "552"
+  owasp: "A01:2021-Broken Access Control"
+  tags: [spring, actuator, debug]
+  preconditions: []
+  evidence_type: http-response
+  exploitability: high
+
+request:
+  method: GET
+  paths:
+    - /actuator
+    - /actuator/
+    - /actuator/env
+    - /actuator/heapdump
+    - /actuator/threaddump
+    - /actuator/configprops
+    - /actuator/metrics
+    - /actuator/mappings
+
+match:
+  status: 200
+  header_contains:
+    - application/json
+  body_regex:
+    # Actuator root commonly has "_links"
+    - "(?is)\"_links\"\\s*:\\s*\\{"
+    # Many endpoints include known keys
+    - "(?is)\"contexts\"\\s*:\\s*\\{|\"measurements\"\\s*:\\s*\\[|\"propertySources\"\\s*:\\s*\\[|\"mappings\"\\s*:\\s*\\{"
+
+save_artifact: false

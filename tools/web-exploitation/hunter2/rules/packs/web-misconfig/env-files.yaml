@@ -1,0 +1,40 @@
+id: env-config-exposure
+
+info:
+  name: Exposed Environment / Config Files
+  severity: High
+  confidence: high
+  category: Sensitive File Exposure
+  description: Environment configuration files (.env, config.json, etc.) are accessible, potentially exposing API keys, database credentials, and other secrets.
+  remediation: Block direct access to env/config files; never serve secrets from web root; move secrets to secret manager; review build artifacts.
+  references:
+    - "https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure"
+    - "https://cwe.mitre.org/data/definitions/552.html"
+  cwe: "552"
+  owasp: "A03:2017-Sensitive Data Exposure"
+  tags: [secrets, config, env, misconfig]
+  preconditions: []
+  evidence_type: http-response
+  exploitability: high
+
+request:
+  method: GET
+  paths:
+    - /.env
+    - /.env.local
+    - /.env.production
+    - /config.json
+    - /config.yml
+    - /config.yaml
+    - /settings.json
+
+match:
+  status: 200
+  body_regex:
+    - '(?m)^[A-Z0-9_]{2,}\s*=\s*[^\n\r#]{1,}$'
+    - '(?is)\{"[a-zA-Z0-9_.-]+"\s*:\s*'
+    - '(?m)^[a-zA-Z0-9_.-]{2,}\s*:\s*.+$'
+  require_all_regex: false
+
+save_artifact: true
+artifact_name: config_or_env

@@ -1,0 +1,32 @@
+id: robots-sensitive-path-clue
+
+info:
+  name: robots.txt Leaks Sensitive or Legacy Paths
+  severity: Info
+  confidence: high
+  category: Information Disclosure
+  description: robots.txt discloses hidden, legacy, or sensitive routes that expand the attack surface.
+  remediation: Do not rely on robots.txt to hide sensitive endpoints. Remove sensitive paths from robots.txt or protect them properly.
+  references:
+    - "https://owasp.org/www-project-web-security-testing-guide/"
+    - "https://cwe.mitre.org/data/definitions/200.html"
+  cwe: "200"
+  owasp: "A01:2021-Broken Access Control"
+  tags: [robots, discovery, disclosure]
+  preconditions: []
+  evidence_type: http-response
+  exploitability: low
+
+request:
+  method: GET
+  paths:
+    - /robots.txt
+
+match:
+  status: 200
+  body_regex:
+    - '(?mi)^Disallow:\s*/secret-panel\s*$'
+    - '(?mi)^Disallow:\s*/old-login\s*$'
+  require_all_regex: false
+
+snippet: true

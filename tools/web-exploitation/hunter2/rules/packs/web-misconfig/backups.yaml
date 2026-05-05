@@ -1,0 +1,44 @@
+id: backup-artifact-exposure
+
+info:
+  name: Exposed Backup / Dump Artifacts
+  severity: High
+  confidence: high
+  category: Sensitive Backup Exposure
+  description: Backup files, database dumps, or archive files are publicly accessible, potentially exposing source code, database contents, or sensitive configuration.
+  remediation: Remove backups from web root; restrict access; enforce proper deployment hygiene; add deny rules for archive/dump patterns.
+  references:
+    - "https://owasp.org/www-project-web-security-testing-guide/"
+    - "https://cwe.mitre.org/data/definitions/552.html"
+  cwe: "552"
+  owasp: "A01:2021-Broken Access Control"
+  tags: [backup, archive, dump, misconfig]
+  preconditions: []
+  evidence_type: binary-response
+  exploitability: high
+
+request:
+  method: GET
+  paths:
+    # archives
+    - /backup.zip
+    - /site-backup.zip
+    - /backup.tar
+    - /backup.tar.gz
+    # sql dumps
+    - /db.sql
+    - /dump.sql
+    - /backup.sql
+
+match:
+  status: 200
+  header_contains:
+    - application
+  body_regex:
+    - '(?s)PK\x03\x04'
+    - '(?s)\x1f\x8b'
+    - '(?s)ustar'
+    - '(?im)^(--\s*MySQL\s*dump|--\s*PostgreSQL\s*database\s*dump|CREATE\s+TABLE|INSERT\s+INTO)\b'
+
+save_artifact: true
+artifact_name: backup_or_dump

@@ -1,0 +1,28 @@
+# WAF Fingerprints
+waf_signatures:
+  cloudflare:
+    headers:
+      - "Server: cloudflare"
+      - "CF-RAY"
+    response_patterns:
+      - "Attention Required"
+      - "Ray ID"
+  
+  modsecurity:
+    headers:
+      - "Server: Apache"
+    response_patterns:
+      - "ModSecurity"
+      - "OWASP ModSecurity"
+  
+  akamai:
+    headers:
+      - "X-Akamai"
+    response_patterns:
+      - "Akamai"
+  
+  aws_waf:
+    headers:
+      - "X-Amzn-RequestId"
+    response_patterns:
+      - "AWS WAF"

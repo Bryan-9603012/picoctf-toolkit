@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hunter-2"
+version = "1.0.0"
+description = "Enterprise-grade rule-based web security scanner with verification, baseline comparison, and CI integration"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Hunter Team", email = "hunter@example.com"}
+]
+license = {text = "MIT"}
+keywords = ["security", "scanner", "pentest", "ctf", "web-security"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+]
+
+dependencies = [
+    "requests>=2.28.0",
+    "pyyaml>=6.0",
+    "urllib3>=1.26.0",
+    "beautifulsoup4>=4.11.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black>=22.0",
+    "isort>=5.0",
+    "flake8>=4.0",
+]
+
+[project.scripts]
+hunter = "hunter.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "hunter*",
+    "core*",
+    "config*",
+    "fingerprint*",
+    "enumeration*",
+    "scanning*",
+    "postprocess*",
+    "reports*",
+    "rules*"
+]

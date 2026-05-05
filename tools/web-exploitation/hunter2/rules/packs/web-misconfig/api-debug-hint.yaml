@@ -1,0 +1,32 @@
+id: api-debug-hint-exposure
+
+info:
+  name: API Debug Parameter Leaks Internal Hints
+  severity: Medium
+  confidence: high
+  category: Information Disclosure
+  description: API debug mode reveals internal notes or access-control hints without authentication.
+  remediation: Remove debug-only response fields from production APIs and gate diagnostic output behind strong authorization.
+  references:
+    - "https://owasp.org/www-project-api-security/"
+    - "https://cwe.mitre.org/data/definitions/200.html"
+  cwe: "200"
+  owasp: "API3:2023 Broken Object Property Level Authorization"
+  tags: [api, debug, disclosure]
+  preconditions: []
+  evidence_type: http-response
+  exploitability: medium
+
+request:
+  method: GET
+  paths:
+    - /api/me?debug=1
+
+match:
+  status: 200
+  body_regex:
+    - 'internal_note'
+    - 'token_hint'
+  require_all_regex: true
+
+snippet: true

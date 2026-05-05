@@ -1,0 +1,44 @@
+id: heapdump-exposure
+
+info:
+  name: Exposed Heap Dump Endpoint
+  severity: Critical
+  confidence: high
+  category: Debug Endpoint Exposure / Memory Disclosure
+  description: The /heapdump endpoint exposes a V8 heap snapshot, potentially containing sensitive data, credentials, or flags from memory.
+  remediation: Disable heapdump endpoints in production; require auth; restrict by IP/network; separate dev/prod configs.
+  references:
+    - "https://nodejs.org/api/v8.html#v8serialize"
+    - "https://owasp.org/www-project-web-security-testing-guide/"
+    - "https://cwe.mitre.org/data/definitions/200.html"
+  cwe: "200"
+  owasp: "A01:2021-Broken Access Control"
+  tags: [node, express, v8, memory, debug, heapdump]
+  preconditions: []
+  evidence_type: binary-response
+  exploitability: high
+
+request:
+  method: GET
+  paths:
+    - /heapdump
+    - /api/heapdump
+    - /debug/heapdump
+    - /heap
+    - /snapshot
+    - /dump
+
+match:
+  status: 200
+  header_contains:
+    - application/octet-stream
+  body_regex:
+    # Prefer: direct flag
+    - "picoCTF\\{[^}]+\\}"
+    # Fallback: typical heap snapshot structure markers (helps confirm it's real dump)
+    - "(?s)\"snapshot\"\\s*:\\s*\\{|\"nodes\"\\s*:\\s*\\[|\"strings\"\\s*:\\s*\\["
+    # Anti-FP: if it's actually HTML, we'd rather not accept
+  require_all_regex: false
+
+save_artifact: true
+artifact_name: heapdump

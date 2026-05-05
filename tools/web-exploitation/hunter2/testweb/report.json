@@ -1,0 +1,118 @@
+{
+  "target": "http://saturn.picoctf.net:60627",
+  "loot_dir": "loot",
+  "metadata": {
+    "generated_at": "2026-04-16T06:00:47.672364Z",
+    "scan_id": "scan-20260416-060014",
+    "policy": "balanced",
+    "environment": "unknown",
+    "summary": {
+      "total_findings": 1,
+      "by_severity": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      },
+      "by_verification": {
+        "observed": 0,
+        "suspected": 1,
+        "verified": 0,
+        "exploited": 0
+      }
+    }
+  },
+  "findings": [
+    {
+      "id": "finding-passive-secrets-18216",
+      "rule_id": "passive-secrets",
+      "title": "Passive Secrets in Response",
+      "name": "Passive Secrets in Response",
+      "category": "passive",
+      "severity": "high",
+      "confidence": "medium",
+      "url": "http://saturn.picoctf.net:60627/",
+      "affected_asset": "",
+      "verification_state": "suspected",
+      "cwe": null,
+      "owasp": null,
+      "description": null,
+      "evidence": {
+        "method": "GET",
+        "url": "http://saturn.picoctf.net:60627/",
+        "status": 200,
+        "headers": {
+          "Server": "nginx/1.21.6",
+          "Content-Type": "text/html"
+        },
+        "content_length": 916,
+        "elapsed_ms": 625.8335729999089,
+        "snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">\n    <title>On Histiaeus</title>\n  </head>\n  <body>\n    <h1>On Histiaeus</h1>\n    <p>However, according to Herodotus, Histiaeus was unhappy having to stay in\n       Susa, and made plans to return to his position as King of Miletus by \n       instigating a revolt in Ionia. In 499 BC, he shaved the head of his \n       most trusted slave, tattooed a message on his head, and then waited for \n       his hair to grow back. The slave was then sent to Aristagoras, who was \n       instructed to shave the slave's head again and read the message, which \n       told him to revolt against the Persians.</p>\n    <br>\n    <p> Source: Wikipedia on Histiaeus </p>\n\t<!--picoCTF{1n5p3t0r_0f_h7ml_fd5d57bd}-->\n  </body>\n</html>\n",
+        "artifact": null,
+        "scope_reason": "ok",
+        "request_body": null,
+        "response_body": null,
+        "response_headers": null,
+        "matched_pattern": null,
+        "timestamp": null
+      },
+      "matches": [
+        "picoctf_flag:picoCTF{1n5p3t0r_0f_h7ml_fd5d57bd}"
+      ],
+      "tags": [
+        "passive",
+        "secrets"
+      ],
+      "remediation": "Remove secrets from client-facing responses; rotate exposed keys/tokens.",
+      "references": [],
+      "preconditions": [],
+      "safe_check": null,
+      "verify_check": null,
+      "evidence_type": null,
+      "extracted_data": {},
+      "chain": [],
+      "related_artifacts": [],
+      "clues": [
+        "hidden_html_comment: <!--picoCTF{1n5p3t0r_0f_h7ml_fd5d57bd}-->",
+        "hidden_html_comment: <!--picoCTF{1n5p3t0r_0f_h7ml_fd5d57bd}-->"
+      ],
+      "variables": {},
+      "risk_score": 86,
+      "exploitability": null,
+      "reproduction_steps": [],
+      "exploit_chain": [],
+      "scan_id": "scan-20260416-060014",
+      "discovered_at": null,
+      "verified_at": null,
+      "source_rule_pack": null,
+      "remediation_draft": null,
+      "remediation_summary": "Review and secure the exposed endpoint",
+      "remediation_steps": [
+        {
+          "step": "Assess exposure scope and data sensitivity",
+          "priority": "immediate",
+          "effort": "medium",
+          "description": "Determine what data was accessible and its sensitivity"
+        },
+        {
+          "step": "Implement appropriate access controls",
+          "priority": "short",
+          "effort": "medium",
+          "description": "Add authentication, IP restrictions, or disable the endpoint"
+        },
+        {
+          "step": "Document and monitor the fix",
+          "priority": "short",
+          "effort": "low",
+          "description": "Add to security monitoring and regression tests"
+        }
+      ],
+      "remediation_references": [
+        "https://owasp.org/www-project-web-security-testing-guide/"
+      ],
+      "remediation_additional_resources": []
+    }
+  ],
+  "file_recovery": []
+}

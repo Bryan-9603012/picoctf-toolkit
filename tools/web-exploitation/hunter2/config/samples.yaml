@@ -1,0 +1,90 @@
+# Hunter-2 Configuration Examples
+
+This directory contains sample configurations for different use cases.
+
+## Basic Config
+
+```yaml
+# hunter-basic.yaml
+target: http://example.com
+policy: balanced
+mode: web
+```
+
+## Staging Scan with Baseline
+
+```yaml
+# hunter-staging.yaml
+target: http://staging.example.com
+policy: balanced
+env: staging
+baseline: baseline-scan.json
+new-only: true
+fail-on: high
+```
+
+## Production Scan (Safe Mode)
+
+```yaml
+# hunter-prod.yaml
+target: https://prod.example.com
+policy: safe
+env: prod
+fail-on: critical
+fail-verified-only: true
+```
+
+## CTF Mode
+
+```yaml
+# hunter-ctf.yaml
+target: http://ctf.target.com
+mode: ctf
+policy: balanced
+html: true
+```
+
+## Full Governance Pipeline
+
+```yaml
+# hunter-governance.yaml
+target: http://target.example.com
+policy: balanced
+env: staging
+
+# Baseline & Delta
+baseline: previous-scan.json
+new-only: true
+
+# Suppressions
+suppressions: suppressions.json
+hide-suppressed: true
+
+# CI/Gate
+fail-on-new: high
+fail-on-delta-only: false
+
+# Output
+html: true
+report: scan-results
+```
+
+## Suppressions File
+
+```json
+// suppressions.json
+{
+  "suppressions": [
+    {
+      "id": "sup-0001",
+      "rule_id": "git-directory-exposure",
+      "url_pattern": "http://example.com/public/.git/.*",
+      "reason": "Public repository, no sensitive data",
+      "owner": "security_team",
+      "created_at": "2026-04-11T00:00:00Z",
+      "expires_at": null,
+      "severity_filter": null
+    }
+  ]
+}
+```

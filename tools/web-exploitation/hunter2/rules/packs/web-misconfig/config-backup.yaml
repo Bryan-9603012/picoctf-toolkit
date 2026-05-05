@@ -1,0 +1,37 @@
+id: config-backup-exposure
+
+info:
+  name: Exposed Backup or Configuration File
+  severity: High
+  confidence: high
+  category: Sensitive File Exposure
+  description: Configuration or backup artifacts are directly accessible and may disclose credentials, deployment settings, or environment secrets.
+  remediation: Remove backup/config files from the web root and block direct access to .bak, .old, .zip, and similar deployment leftovers.
+  references:
+    - "https://owasp.org/www-project-web-security-testing-guide/"
+    - "https://cwe.mitre.org/data/definitions/552.html"
+  cwe: "552"
+  owasp: "A05:2021-Security Misconfiguration"
+  tags: [config, backup, exposure, misconfig]
+  preconditions: []
+  evidence_type: http-response
+  exploitability: high
+
+request:
+  method: GET
+  paths:
+    - /config.bak
+    - /config.old
+    - /backup.zip
+    - /site-backup.zip
+
+match:
+  status: 200
+  body_regex:
+    - '(?i)SECRET_KEY\s*='
+    - '(?i)DB_PASS\s*='
+    - '(?i)ENV\s*=\s*development'
+    - '(?s)PK\x03\x04'
+
+save_artifact: true
+artifact_name: exposed_config_or_backup

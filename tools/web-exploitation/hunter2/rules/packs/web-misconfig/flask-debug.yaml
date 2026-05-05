@@ -1,0 +1,33 @@
+id: flask-debug-exposure
+
+info:
+  name: Exposed Debug Information Endpoint
+  severity: High
+  confidence: high
+  category: Debug Information Exposure
+  description: Debug endpoint exposes development settings, secret material, or internal request metadata.
+  remediation: Disable debug endpoints in production and avoid exposing secret keys or environment details over HTTP responses.
+  references:
+    - "https://owasp.org/www-project-web-security-testing-guide/"
+    - "https://cwe.mitre.org/data/definitions/215.html"
+  cwe: "215"
+  owasp: "A05:2021-Security Misconfiguration"
+  tags: [flask, debug, infoleak, misconfig]
+  preconditions: []
+  evidence_type: http-response
+  exploitability: medium
+
+request:
+  method: GET
+  paths:
+    - /debug
+
+match:
+  status: 200
+  body_regex:
+    - '(?i)DEBUG\s*=\s*True'
+    - '(?i)SECRET_KEY\s*='
+    - '(?i)ENV\s*=\s*development'
+  require_all_regex: false
+
+snippet: true

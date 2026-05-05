@@ -1,0 +1,6 @@
+# Minimal dependencies used by the current integrated modules
+requests>=2.31.0
+PyYAML>=6.0
+
+# Optional for future pwn-template workflows; not required by current pwn-helper code.
+# pwntools>=4.12.0

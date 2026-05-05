@@ -1,0 +1,2 @@
+# No external dependencies required.
+# This tool uses Python 3.9+ standard library only.

@@ -1,0 +1,52 @@
+# Technology Stack Fingerprints
+technologies:
+  web_servers:
+    - name: nginx
+      headers:
+        - "Server: nginx"
+      patterns:
+        - "nginx"
+    
+    - name: apache
+      headers:
+        - "Server: Apache"
+      patterns:
+        - "Apache"
+    
+    - name: iis
+      headers:
+        - "Server: Microsoft-IIS"
+      patterns:
+        - "IIS"
+  
+  frameworks:
+    - name: django
+      patterns:
+        - "Django"
+        - "csrf_token"
+    
+    - name: rails
+      patterns:
+        - "Rails"
+        - "_csrf_token"
+    
+    - name: spring
+      patterns:
+        - "Spring"
+        - "actuator"
+  
+  languages:
+    - name: php
+      patterns:
+        - "PHP"
+        - "PHPSESSID"
+    
+    - name: python
+      patterns:
+        - "Python"
+        - "Werkzeug"
+    
+    - name: nodejs
+      patterns:
+        - "Node.js"
+        - "Express"
