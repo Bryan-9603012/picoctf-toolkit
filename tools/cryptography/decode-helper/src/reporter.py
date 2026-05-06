@@ -115,3 +115,43 @@ def generate_report(input_text: str, results: list[DecodeResult], output_path: s
         f.write(content)
 
     return output_path
+
+
+def generate_json_report(input_text: str, results: list[DecodeResult], output_path: str, top_n: int = 0, recursive: bool = False) -> str:
+    import json
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+    displayed = results[:top_n] if top_n > 0 else results
+    payload = {
+        "tool": "CTF Decode Helper",
+        "mode": "Recursive" if recursive else "Single-pass",
+        "input": input_text,
+        "summary": {
+            "total_methods_explored": len(results),
+            "displayed_results": len(displayed),
+            "success": sum(1 for r in results if r.status == "success"),
+            "skipped": sum(1 for r in results if r.status == "skipped"),
+            "failed": sum(1 for r in results if r.status == "failed"),
+            "max_depth_used": max((len(r.chain) for r in results if r.chain), default=0) if recursive else 0,
+        },
+        "flags": [],
+        "results": [],
+    }
+    for r in results:
+        for f in r.flags:
+            if f not in payload["flags"]:
+                payload["flags"].append(f)
+    for r in displayed:
+        payload["results"].append({
+            "method": r.method,
+            "status": r.status,
+            "score": r.score,
+            "confidence": r.confidence,
+            "chain": r.chain,
+            "flags": r.flags,
+            "output": r.output,
+            "reason": r.reason,
+            "error": r.error,
+        })
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+    return output_path

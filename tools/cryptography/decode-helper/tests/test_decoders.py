@@ -547,7 +547,7 @@ class TestMaxBranch(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("[APPLICABILITY LOG]", result.stdout)
-        self.assertIn("Expanded decoders:", result.stdout)
+        self.assertIn("Top decoders:", result.stdout)
         self.assertIn("picoCTF{caesar_d3cr9pt3d_78250afc}", result.stdout)
 
 
@@ -719,7 +719,7 @@ class TestDisplayOptimization(unittest.TestCase):
         print_applicability(applicability_log)
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        self.assertIn("Expanded decoders:", output)
+        self.assertIn("Top decoders:", output)
         lines = output.split("\n")
         decoder_lines = [l for l in lines if l.strip().startswith("- ")]
         self.assertLessEqual(len(decoder_lines), 10)

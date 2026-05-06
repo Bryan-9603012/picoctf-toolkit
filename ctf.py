@@ -21,6 +21,7 @@ import subprocess
 import sys
 import shlex
 import importlib.util
+import re
 from pathlib import Path
 from typing import Dict, List
 from urllib.parse import urlparse
@@ -42,7 +43,7 @@ TOOLS: Dict[str, dict] = {
         "aliases": ["cryptography", "decode", "decoder", "decode-helper"],
         "path": ROOT / "tools" / "cryptography" / "decode-helper",
         "entry": [PYTHON, "main.py"],
-        "summary": "Decode Helper: Base64/hex/binary/URL/ROT/ASCII/multilayer keyless decoding.",
+        "summary": "Decode Helper: keyless decoding, recursive multi-layer decode, file input, reports.",
         "example": "python ctf.py crypto 'Y2hlY2tfZmxhZw==' --recursive --compact",
     },
     "forensics": {
@@ -75,8 +76,8 @@ for key, meta in TOOLS.items():
 PYTHON_DEPS = {
     "web": [("yaml", "PyYAML"), ("requests", "requests")],
     "forensics": [("yaml", "PyYAML")],
-    "crypto": [],
-    "binary": [],
+    "crypto": [],  # updated decode-helper is standard-library only
+    "binary": [("pwn", "pwntools")],
 }
 
 
@@ -228,6 +229,16 @@ def normalize_file_target(raw: str) -> str:
     target = windows_path_to_wsl(raw)
     if target and target != raw.strip():
         print(f"[PATH] Windows 路徑已轉換為 WSL 路徑：{target}")
+
+    # Direct command mode is usually launched from the toolkit root, but each
+    # legacy tool runs inside its own subdirectory.  If a relative file path
+    # exists from the current launcher location, pass an absolute path so it
+    # still works after cwd changes.  Tool-local paths such as samples/base64.txt
+    # remain unchanged when they do not exist from the launcher cwd.
+    if target and not os.path.isabs(target):
+        candidate = Path(target).expanduser()
+        if candidate.exists():
+            target = str(candidate.resolve())
     return target
 
 
@@ -237,7 +248,13 @@ def normalize_tool_args_for_platform(key: str, args: List[str]) -> List[str]:
         return args
 
     new_args = list(args)
-    if key == "forensics":
+    if key == "crypto":
+        # Decode Helper file mode: normalize the value after --file.
+        for i, arg in enumerate(new_args):
+            if arg == "--file" and i + 1 < len(new_args):
+                new_args[i + 1] = normalize_file_target(new_args[i + 1])
+                break
+    elif key == "forensics":
         # First non-option argument is the target file/disk image.
         for i, arg in enumerate(new_args):
             if not arg.startswith("-"):
@@ -252,6 +269,99 @@ def normalize_tool_args_for_platform(key: str, args: List[str]) -> List[str]:
                 new_args[i] = normalize_file_target(arg)
                 break
     return new_args
+
+
+
+def read_text_preview(path_value: str, limit: int = 12000) -> str:
+    try:
+        with open(path_value, "r", encoding="utf-8", errors="replace") as f:
+            return f.read(limit)
+    except OSError:
+        return ""
+
+
+def detect_crypto_input_mode(text: str) -> str:
+    """Best-effort router for Decode Helper modes."""
+    sample = text.strip()
+    if not sample:
+        return "direct-decode"
+
+    lower = sample.lower()
+    script_signals = [
+        "def ", "import ", "from ", "bytes_to_long", "long_to_bytes",
+        "getprime", "pow(", "inverse(", "xor", "chr(", "ord(",
+    ]
+    if any(sig in lower for sig in script_signals):
+        return "script-reverse"
+
+    rsa_patterns = [
+        r"(?m)^\s*n\s*=\s*\d+",
+        r"(?m)^\s*e\s*=\s*\d+",
+        r"(?m)^\s*c\s*=\s*\d+",
+        r"(?m)^\s*n\d+\s*=\s*\d+",
+        r"(?m)^\s*e\d+\s*=\s*\d+",
+        r"(?m)^\s*c\d+\s*=\s*\d+",
+        r"(?m)^\s*(p|q|phi|d|dp|dq|qinv)\s*=\s*\d+",
+    ]
+    hits = sum(1 for pat in rsa_patterns if re.search(pat, sample))
+    if hits >= 2:
+        return "crypto-rsa"
+
+    return "direct-decode"
+
+
+def build_crypto_args_from_file(target: str, report_path: str) -> list[str]:
+    preview = read_text_preview(target)
+    mode = detect_crypto_input_mode(preview)
+    if mode == "crypto-rsa":
+        print("[ROUTER] 偵測到 RSA 結構化輸入，將切換到 crypto-rsa 模式。")
+        return ["--mode", "crypto-rsa", "--file", target, "--report", report_path]
+    if mode == "script-reverse":
+        print("[ROUTER] 偵測到腳本/加密程式內容，將切換到 script-reverse 模式。")
+        return ["--mode", "script-reverse", "--file", target, "--report", report_path]
+    print("[ROUTER] 偵測為一般編碼/密文輸入，將使用 direct-decode 模式。")
+    return ["--file", target, "--recursive", "--depth", "4", "--max-branch", "4", "--top", "10", "--report", report_path]
+
+
+def build_crypto_args_from_text(text_value: str, report_path: str) -> list[str]:
+    mode = detect_crypto_input_mode(text_value)
+    if mode == "script-reverse":
+        print("[ROUTER] 偵測到腳本/加密程式內容。建議改用檔案模式，或直接選 3. 自訂參數。")
+    return [text_value, "--recursive", "--compact", "--report", report_path]
+
+
+
+def looks_like_elf(path_value: str) -> bool:
+    """Return True when the target appears to be a Linux ELF binary."""
+    try:
+        with open(path_value, "rb") as f:
+            return f.read(4) == b"\x7fELF"
+    except OSError:
+        return False
+
+
+def warn_if_not_elf(path_value: str) -> bool:
+    """Warn users when Binary mode is given a non-ELF input.
+
+    The most common mistake is pasting a crypto sample/text file path into
+    Binary Exploitation mode.  We do not block execution completely because
+    advanced users may still want to test an unusual file, but the interactive
+    flow defaults to returning to the menu.
+    """
+    if not path_value:
+        return False
+    if not Path(path_value).exists():
+        print(f"[WARN] 找不到檔案：{path_value}")
+        return False
+    if looks_like_elf(path_value):
+        return True
+
+    print("\n[WARN] 這個檔案看起來不是 Linux ELF binary。")
+    print(f"[FILE] {path_value}")
+    print("Binary Exploitation 模式應該輸入像 ./vuln、chall、ret2win 這類 ELF 檔。")
+    print("如果你貼的是 hex.txt、cipher.txt、encoded.txt，請改選：")
+    print("  2. Cryptography -> Decode Helper")
+    return False
 
 
 def normalize_url(raw: str) -> str:
@@ -300,11 +410,39 @@ def interactive_web() -> int:
 
 def interactive_crypto() -> int:
     print("\n[Cryptography] Decode Helper")
-    text = ask("請貼上要解碼的文字> ")
-    if not text:
-        return 0
-    return run_tool("crypto", [text, "--recursive", "--compact"])
+    print("分析模式：")
+    print("  1. 貼上密文/編碼字串，推薦")
+    print("  2. 讀取文字檔，支援 Windows 路徑")
+    print("  3. 自訂 Decode Helper 參數")
+    choice = ask("選擇 [1/2/3，預設 1]> ") or "1"
 
+    if choice == "2":
+        target = normalize_file_target(ask("請輸入文字檔路徑（支援 Windows 路徑，例如 C:\\Users\\...）> "))
+        if not target:
+            return 0
+        return run_tool("crypto", build_crypto_args_from_file(target, "reports/toolkit-crypto-file-result.md"))
+
+    if choice == "3":
+        extra = ask("請輸入 Decode Helper 參數，例如 --file samples/base64.txt --recursive --top 10\nARGS> ")
+        return run_tool("crypto", shlex.split(extra) if extra else [])
+
+    text_value = ask("請貼上要解碼的文字> ")
+    if not text_value:
+        return 0
+
+    mode = detect_crypto_input_mode(text_value)
+    if mode == "crypto-rsa":
+        print("[ROUTER] 偵測到 RSA 結構化輸入。為避免命令列長度與換行問題，會先存成暫存檔再交給 crypto-rsa。")
+        temp_dir = ROOT / "tools" / "cryptography" / "decode-helper" / "reports"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        temp_path = temp_dir / "toolkit-crypto-inline-rsa.txt"
+        temp_path.write_text(text_value, encoding="utf-8")
+        return run_tool("crypto", ["--mode", "crypto-rsa", "--file", str(temp_path), "--report", "reports/toolkit-crypto-inline-rsa.md"])
+
+    if mode == "script-reverse":
+        print("[ROUTER] 偵測到腳本/加密程式內容。建議改用檔案模式，或選 3. 自訂參數。")
+
+    return run_tool("crypto", build_crypto_args_from_text(text_value, "reports/toolkit-crypto-result.md"))
 
 def interactive_forensics() -> int:
     print("\n[Forensics] ArtifactScope")
@@ -324,6 +462,11 @@ def interactive_binary() -> int:
     target = normalize_file_target(ask("請輸入 ELF / binary 路徑（支援 Windows 路徑，例如 C:\\Users\\...）> "))
     if not target:
         return 0
+    if not warn_if_not_elf(target):
+        choice = ask("仍然要用 Binary 模式嘗試執行嗎？[y/N]> ").lower()
+        if choice not in {"y", "yes"}:
+            print("已取消。請回主選單後改選正確分類。")
+            return 0
     print("\n分析模式：")
     print("  1. analyze，保護機制與基本資訊")
     print("  2. strategy，利用方向建議")

@@ -33,3 +33,10 @@ python -m hunter.cli <URL> medium --mode ctf --report report
 ```bash
 ./run_wsl.sh web http://example.picoctf.net:12345/ --mode ctf --report report
 ```
+
+
+## Binary Exploitation 注意事項
+
+Binary 模式需要 `pwntools`。v8 之後會在第一次使用 Binary 模式時自動檢查並安裝。
+
+請輸入 Linux ELF binary，例如 `./vuln`、`chall`、`ret2win`。如果輸入的是 `hex.txt` 或密文檔案，請改用 `Cryptography -> Decode Helper`。

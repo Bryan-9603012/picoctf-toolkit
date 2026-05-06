@@ -1,45 +1,40 @@
 # Windows 啟動說明
 
-建議優先雙擊：
+目前最穩定的方式是：**在 Windows 雙擊 `ctf.bat`，由它自動轉進 WSL 執行 `run_wsl.sh`。**
 
-```bat
-ctf.bat
-```
+## 建議流程
 
-如果雙擊後仍然閃退，請改用 CMD / PowerShell 進入資料夾後執行：
+1. 先安裝並設定好 WSL Ubuntu
+2. 雙擊 `ctf.bat`
+3. 它會自動：
+   - 取得目前資料夾對應的 WSL 路徑
+   - 進入 WSL
+   - 執行 `./run_wsl.sh`
 
-```bat
-ctf.bat
-```
+## install_deps.bat
 
-本版會在根目錄產生：
-
-```text
-ctf-last-run.log
-```
-
-若出錯，請把畫面或這個 log 貼給我。
-
-## 依賴安裝
-
-如果 Web 模式缺少 `PyYAML` 或 `requests`，可以先雙擊：
+如果要先安裝依賴，可以雙擊：
 
 ```bat
 install_deps.bat
 ```
 
-或手動執行：
+它會優先呼叫：
 
-```bat
-py -3 -m pip install PyYAML requests
+```bash
+./install_deps_wsl.sh
 ```
 
-## 不建議
+## 後備模式
 
-不建議用 MSYS2 的 Python 直接跑，因為它常見問題是沒有 pip：
+若電腦沒有 WSL，`ctf.bat` 才會退回 Windows Python 模式。
+
+## Log
+
+若執行失敗，根目錄會保留：
 
 ```text
-C:\msys64\ucrt64\bin\python.exe: No module named pip
+ctf-last-run.log
 ```
 
-建議安裝 Windows 官方 Python，或用 `py -3 ctf.py` 啟動。
+把畫面或這個 log 貼出來即可。

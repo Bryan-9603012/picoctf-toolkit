@@ -419,8 +419,8 @@ def get_transition_policy(text: str) -> list[tuple[str, int, str]]:
         if a.decoder_name == "BYTES_LITERAL_EXTRACT":
             if bytes_lit_boost:
                 score = max(score, 90)
-            else:
-                score = 0
+            if strong_base64_boost:
+                score = max(score, 85)
         elif a.decoder_name == "BASE64":
             if strong_base64_boost:
                 score = max(score, 95)
@@ -441,20 +441,16 @@ def get_transition_policy(text: str) -> list[tuple[str, int, str]]:
             if sub_boost:
                 score = max(score, 60)
             if strong_base64_boost:
-                score = 0
+                score = 2
             elif base64_boost or hex_boost or a1z26_boost:
-                score = max(score - 70, 0)
+                score = max(score - 50, 0)
             if bytes_lit_boost:
-                score = 0
+                score = max(score - 30, 5)
         elif a.decoder_name == "REVERSE":
-            if rev_boost and not (strong_base64_boost or base64_boost or bytes_lit_boost):
+            if rev_boost:
                 score = max(score, 55)
-            if strong_base64_boost:
-                score = 0
-            elif base64_boost:
-                score = min(score, 5)
-            if bytes_lit_boost:
-                score = min(score, 5)
+            if strong_base64_boost or base64_boost:
+                score = max(score - 40, 3)
 
         adjusted.append((a.decoder_name, score, a.reason))
 

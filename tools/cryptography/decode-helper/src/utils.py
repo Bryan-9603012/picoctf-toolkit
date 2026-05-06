@@ -71,10 +71,10 @@ def print_applicability(log: list[dict]):
         print(SUB_SEPARATOR)
         print(f"Layer {entry['layer']} candidate: {_preview(entry['input'], 40)}")
         print()
-        print("Expanded decoders:")
+        print("Top decoders:")
         top_policies = [(n, s, r) for n, s, r in entry["policy"] if s >= 10]
         top_policies.sort(key=lambda x: x[1], reverse=True)
-        for name, score, reason in top_policies[:3]:
+        for name, score, reason in top_policies[:5]:
             print(f"  - {name}: {score} ({reason})")
         print()
 

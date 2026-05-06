@@ -11,7 +11,9 @@ A semi-automated decode helper for CTF challenges. Takes a suspicious string, tr
 - **Is:** A quick way to try multiple common encodings on a suspicious string
 - **Is:** A flag detector with scoring for readable outputs
 - **Is Not:** An automated CTF challenge solver
-- **Is Not:** A crypto attack tool (no AES, RSA, etc.)
+- **Is:** A lightweight RSA helper for common picoCTF-style parameter cases
+- **Is:** A script-pattern scanner that suggests a reverse path for encrypt.py-style files
+- **Is Not:** A full cryptanalysis framework for AES or modern protocols
 - **Is Not:** A web scanner or packet analyzer
 
 ## Features
@@ -39,6 +41,21 @@ git clone <repo-url>
 cd ctf-decode-helper
 ```
 
+## Mode Overview
+
+```text
+--mode direct-decode   General encoding/classical decode mode (default)
+--mode crypto-rsa      RSA parameter scanner and common attack helper
+--mode script-reverse  Inspect encrypt.py / solve.py style scripts and suggest reverse flow
+```
+
+Backward-compatible aliases are still supported:
+
+```text
+--mode decode  -> direct-decode
+--mode rsa     -> crypto-rsa
+```
+
 ## Usage Examples
 
 ### Direct input
@@ -52,10 +69,13 @@ python main.py
 # Enter text to decode: cGljb0NURnt0ZXN0fQ==
 ```
 
-### Export report
+### Export reports
 ```bash
-python3 main.py --report reports/result.md "cGljb0NURnt0ZXN0fQ=="
+python3 main.py --report-md reports/result.md "cGljb0NURnt0ZXN0fQ=="
+python3 main.py --report-json reports/result.json "cGljb0NURnt0ZXN0fQ=="
 ```
+
+`--report` is kept as a backward-compatible Markdown report alias.
 
 ### File input
 ```bash
@@ -93,6 +113,53 @@ Use `--show-applicability` to see how each layer evaluates decoder applicability
 ```bash
 python3 main.py --file samples/interencdec-enc_flag.txt --recursive --depth 4 --max-branch 4 --show-applicability --top 10
 ```
+
+
+### RSA helper mode
+
+```bash
+python3 main.py --mode crypto-rsa --file samples/small-trouble-message.txt --report-md reports/rsa-auto-demo.md
+python3 main.py --mode crypto-rsa --n <n> --e <e> --c <c>
+```
+
+Current RSA helper behavior:
+
+- Extracts `n`, `e`, `c`, and optional `p`, `q`, `phi`, `d`, `dp`, `dq`, `qinv` from text files
+- Supports indexed multi-ciphertext fields such as `n1/e1/c1`, `n2/e2/c2`, `e1/c1`, `e2/c2` with shared `n`
+- Uses direct `d` when present
+- Uses `p/q` to compute `phi` and recover `d`
+- Checks common modulus attack for same-`n`, different-`e` ciphertext pairs
+- Checks broadcast attack for same small `e` across multiple coprime moduli
+- Checks `e=3` low-exponent cube-root case
+- Checks Fermat factorization when `p` and `q` are close
+- Checks small-n factorization with trial division and Pollard Rho fallback for toy/CTF-sized cases
+- Runs Wiener attack for small private exponent challenges such as Small Trouble
+- Does not fabricate flags; it only reports flags actually present in recovered plaintext
+
+RSA validation samples:
+
+```bash
+python3 main.py --mode crypto-rsa --file samples/rsa_fermat_test.txt
+python3 main.py --mode crypto-rsa --file samples/rsa_common_modulus_test.txt
+python3 main.py --mode crypto-rsa --file samples/rsa_broadcast_test.txt
+python3 main.py --mode crypto-rsa --file samples/rsa_small_n_factor_test.txt
+```
+
+### Script reverse mode
+
+```bash
+python3 main.py --mode script-reverse --file encrypt.py --report-md reports/script-reverse.md
+```
+
+This mode does not execute the challenge script. It statically scans for patterns such as:
+
+- `pow(m, e, n)`
+- `bytes_to_long()` / `long_to_bytes()`
+- `getPrime()`
+- `inverse()`
+- XOR / `ord()` / `chr()` / Base64 / `random.seed()`
+
+It then outputs detected signals, likely challenge type, and a suggested reverse plan.
 
 ## Real Case Workflow
 

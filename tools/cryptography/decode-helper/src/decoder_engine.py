@@ -69,40 +69,37 @@ def _is_noise_family_result(result: DecodeResult, all_results: list[DecodeResult
 
 
 def _apply_reverse_penalty(result: DecodeResult) -> DecodeResult:
-    """Apply stronger penalty to low-value reverse-based chains."""
+    """Apply penalty to results with REVERSE in chain but no flag/keywords/structural improvement."""
     if not result.chain or not _has_reverse_in_chain(result.chain):
         return result
     if result.flags:
         return result
     from src.policy import _is_base64_like
-    if _is_base64_like(result.output) or (len(result.output) > 60 and result.score <= 200):
-        result.score = max(result.score - 160, 5)
-    elif result.score <= 160:
-        result.score = max(result.score - 80, 5)
+    if _is_base64_like(result.output) or (len(result.output) > 100 and result.score < 100):
+        result.score = max(result.score - 100, 5)
     return result
 
 
 def _suppress_noise_family(all_results: list[DecodeResult]) -> list[DecodeResult]:
-    """Suppress repetitive low-value shift families while keeping a tiny representative sample."""
+    """Suppress noise family results: keep only best representative, penalize others."""
     noise_groups = {}
     for r in all_results:
         if not r.chain or len(r.chain) < 2:
             continue
         if r.chain[-1].startswith("CAESAR_SHIFT_") and not r.flags:
             parent_key = tuple(r.chain[:-1])
-            noise_groups.setdefault(parent_key, []).append(r)
+            if parent_key not in noise_groups:
+                noise_groups[parent_key] = []
+            noise_groups[parent_key].append(r)
 
-    for _parent_key, group in noise_groups.items():
-        if len(group) < 2:
+    for parent_key, group in noise_groups.items():
+        if len(group) < 3:
             continue
         group.sort(key=lambda x: x.score, reverse=True)
-        keep_count = 1
+        keep_count = min(2, len(group))
         for i, r in enumerate(group):
             if i >= keep_count:
-                # Push repeated same-family shift noise well below meaningful
-                # intermediate results so top-N stays readable.
-                r.score = -50 - i
-                r.confidence = "NOISE"
+                r.score = max(r.score - 80, 3)
 
     return all_results
 
@@ -155,16 +152,20 @@ def run_recursive_decoders(text: str, max_depth: int = 3, max_branch: int = 5, s
                 continue
 
             policy = get_transition_policy(current_text)
-            expandable = [(name, score, reason) for name, score, reason in policy if score >= 10]
-            expandable = expandable[:max_branch] if max_branch > 0 else expandable
             if show_applicability and applicability_log is not None:
                 applicability_log.append({
                     "layer": depth_level,
                     "input": current_text[:80] + ("..." if len(current_text) > 80 else ""),
-                    "policy": expandable,
+                    "policy": policy,
                 })
 
-            for name, score, reason in expandable:
+            expanded = 0
+            for name, score, reason in policy:
+                if score < 10:
+                    continue
+                if expanded >= max_branch:
+                    break
+                expanded += 1
                 if name == "CAESAR":
                     if _is_base64_like(current_text):
                         continue

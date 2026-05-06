@@ -1,0 +1,176 @@
+{
+  "tool": "CTF Decode Helper",
+  "mode": "Recursive",
+  "input": "cvpbPGS{grfg}",
+  "summary": {
+    "total_methods_explored": 702,
+    "displayed_results": 10,
+    "success": 702,
+    "skipped": 0,
+    "failed": 0,
+    "max_depth_used": 2
+  },
+  "flags": [
+    "picoCTF{test}"
+  ],
+  "results": [
+    {
+      "method": "ROT13",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "ROT13"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_13",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_13"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_12",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_1",
+        "CAESAR_SHIFT_12"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_11",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_2",
+        "CAESAR_SHIFT_11"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_10",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_3",
+        "CAESAR_SHIFT_10"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_9",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_4",
+        "CAESAR_SHIFT_9"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_8",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_5",
+        "CAESAR_SHIFT_8"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_7",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_6",
+        "CAESAR_SHIFT_7"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_6",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_7",
+        "CAESAR_SHIFT_6"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    },
+    {
+      "method": "CAESAR_SHIFT_5",
+      "status": "success",
+      "score": 1170,
+      "confidence": "HIGH",
+      "chain": [
+        "CAESAR_SHIFT_8",
+        "CAESAR_SHIFT_5"
+      ],
+      "flags": [
+        "picoCTF{test}"
+      ],
+      "output": "picoCTF{test}",
+      "reason": "",
+      "error": ""
+    }
+  ]
+}
